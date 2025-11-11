@@ -8,7 +8,7 @@ interface ImageState {
   preview: string;
 }
 
-// Helper component for uploading images with drag-and-drop support.
+// 图片上传组件
 interface ImageUploaderProps {
   id: string;
   label: string;
@@ -32,7 +32,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ id, label, onFileSelect, 
   const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    // This check prevents the leave event from firing when moving over child elements
     if (e.currentTarget.contains(e.relatedTarget as Node)) {
       return;
     }
@@ -40,7 +39,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ id, label, onFileSelect, 
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
-    e.preventDefault(); // Necessary to allow dropping
+    e.preventDefault();
     e.stopPropagation();
   };
 
@@ -67,36 +66,34 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ id, label, onFileSelect, 
   };
 
   return (
-    <div className={`relative backdrop-blur-xl bg-gradient-to-br from-gray-800/80 via-gray-900/80 to-gray-800/80 p-6 rounded-3xl shadow-2xl flex flex-col items-center justify-center h-full border-2 ${isDragging ? 'border-pink-500 scale-105 shadow-pink-500/50' : 'border-gray-700/50'} hover:border-purple-500/70 hover:shadow-purple-500/30 transition-all duration-500 group`}>
+    <div className={`relative backdrop-blur-xl bg-gradient-to-br from-gray-800/60 via-gray-900/60 to-gray-800/60 p-6 rounded-2xl shadow-xl flex flex-col items-center justify-center h-full border ${isDragging ? 'border-pink-400 scale-105' : 'border-gray-700/50'} hover:border-purple-400/70 transition-all duration-300`}>
       <label
         htmlFor={id}
-        className={`w-full h-full flex flex-col items-center justify-center text-center ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+        className={`w-full h-full flex flex-col items-center justify-center text-center ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >
-        <div className="flex items-center text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 mb-4 group-hover:scale-110 transition-transform duration-300">
+        <div className="flex items-center text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-3">
           {icon}
-          <span className="ml-3">{label}</span>
+          <span className="ml-2">{label}</span>
         </div>
-        <div className="w-full h-64 bg-gradient-to-br from-gray-900/90 to-gray-800/90 rounded-2xl flex items-center justify-center overflow-hidden border border-gray-700/30 group-hover:border-purple-500/50 transition-all duration-300 shadow-inner">
+        <div className="w-full h-64 bg-gray-900/70 rounded-xl flex items-center justify-center overflow-hidden border border-gray-700/30 hover:border-purple-500/40 transition-all duration-300">
           {previewUrl ? (
-            <img src={previewUrl} alt={label} className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105" />
+            <img src={previewUrl} alt={label} className="w-full h-full object-contain" />
           ) : (
-            <div className="text-gray-400 flex flex-col items-center group-hover:text-purple-300 transition-colors duration-300">
-              <div className="group-hover:scale-110 transition-transform duration-300">
-                <UploadIcon />
-              </div>
-              <span className="mt-2 font-semibold">点击或拖拽上传</span>
-              <span className="text-xs text-gray-500 mt-1">支持 PNG、JPG、WEBP 格式</span>
+            <div className="text-gray-400 flex flex-col items-center">
+              <UploadIcon />
+              <span className="mt-2 text-sm">点击或拖拽上传</span>
+              <span className="text-xs text-gray-500 mt-1">PNG、JPG、WEBP</span>
             </div>
           )}
         </div>
       </label>
       {isDragging && (
-        <div className="absolute inset-0 bg-gradient-to-br from-pink-500/30 via-purple-500/30 to-indigo-500/30 backdrop-blur-md rounded-3xl flex items-center justify-center pointer-events-none z-10 animate-pulse border-2 border-pink-400">
-          <p className="text-2xl font-bold text-white drop-shadow-lg">✨ 放开以上传图片 ✨</p>
+        <div className="absolute inset-0 bg-gradient-to-br from-pink-500/20 to-purple-500/20 backdrop-blur-sm rounded-2xl flex items-center justify-center pointer-events-none z-10 border-2 border-pink-400">
+          <p className="text-xl font-bold text-white">✨ 放开上传 ✨</p>
         </div>
       )}
       <input
@@ -112,7 +109,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ id, label, onFileSelect, 
 };
 
 
-// Main App Component
+// 主应用组件
 export default function App() {
   const [styleImage, setStyleImage] = useState<ImageState | null>(null);
   const [sourceImage, setSourceImage] = useState<ImageState | null>(null);
@@ -120,40 +117,32 @@ export default function App() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // User input API key state
-  const [userApiKey, setUserApiKey] = useState<string>('');
-  const [inputApiKey, setInputApiKey] = useState<string>('');
-  const [showApiKeyInput, setShowApiKeyInput] = useState<boolean>(false);
+  // API Key 管理
+  const [apiKey, setApiKey] = useState<string>('');
+  const [showKeyInput, setShowKeyInput] = useState<boolean>(false);
 
-  // Load API key from localStorage on mount
+  // 从 localStorage 加载 API key
   useEffect(() => {
     const savedKey = localStorage.getItem('gemini_api_key');
     if (savedKey) {
-      setUserApiKey(savedKey);
+      setApiKey(savedKey);
+    } else {
+      setShowKeyInput(true);
     }
   }, []);
 
-  // Check if API key is available (from user input or environment variable)
-  const apiKey = userApiKey || process.env.API_KEY;
-  const hasApiKey = !!apiKey;
-
-  const handleSaveApiKey = () => {
-    if (inputApiKey.trim()) {
-      setUserApiKey(inputApiKey.trim());
-      localStorage.setItem('gemini_api_key', inputApiKey.trim());
-      setShowApiKeyInput(false);
-      setInputApiKey('');
+  // 保存 API key
+  const handleSaveKey = (key: string) => {
+    const trimmedKey = key.trim();
+    if (trimmedKey) {
+      setApiKey(trimmedKey);
+      localStorage.setItem('gemini_api_key', trimmedKey);
+      setShowKeyInput(false);
       setError(null);
     }
   };
 
-  const handleClearApiKey = () => {
-    setUserApiKey('');
-    setInputApiKey('');
-    localStorage.removeItem('gemini_api_key');
-    setShowApiKeyInput(true);
-  };
-
+  // 处理文件上传
   const processFile = useCallback((
     file: File,
     setImageState: React.Dispatch<React.SetStateAction<ImageState | null>>
@@ -170,14 +159,16 @@ export default function App() {
     reader.readAsDataURL(file);
   }, []);
 
+  // 生成风格迁移图片
   const handleGenerate = async () => {
     if (!styleImage || !sourceImage) {
-      setError("请同时上传风格参考图和源内容图。");
+      setError("请同时上传风格参考图和源内容图");
       return;
     }
 
     if (!apiKey) {
-      setError("API 密钥未配置。请输入您的 Gemini API 密钥。");
+      setError("请先输入 API 密钥");
+      setShowKeyInput(true);
       return;
     }
 
@@ -186,16 +177,15 @@ export default function App() {
     setGeneratedImage(null);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: apiKey });
+      const ai = new GoogleGenAI({ apiKey });
 
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash-image',
         contents: {
           parts: [
-            // New structure: Content Image -> Style Image -> Instruction
             { inlineData: { data: sourceImage.base64, mimeType: sourceImage.mimeType } },
             { inlineData: { data: styleImage.base64, mimeType: styleImage.mimeType } },
-            { text: "基于第二张图片的艺术风格，重新绘制第一张图片。保持第一张图片的主题和构图。" },
+            { text: "基于第二张图片的艺术风格，重新绘制第一张图片。保持第一张图片的主题和构图，完美融合第二张图的艺术风格。" },
           ],
         },
         config: {
@@ -204,139 +194,103 @@ export default function App() {
       });
 
       const imagePart = response.candidates?.[0]?.content?.parts?.find(part => part.inlineData);
-      if (imagePart && imagePart.inlineData) {
+      if (imagePart?.inlineData) {
         const generatedImageDataUrl = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
         setGeneratedImage(generatedImageDataUrl);
       } else {
-        throw new Error("未能生成图片。模型可能无法处理此请求。");
+        throw new Error("生成失败，请重试");
       }
     } catch (e: any) {
-      if (e.message?.includes('Requested entity was not found.') || e.message?.includes('API key')) {
-        setError("API 密钥错误。请检查您的 Gemini API 密钥。");
+      console.error('Generation error:', e);
+
+      if (e.message?.includes('API key') || e.message?.includes('401') || e.message?.includes('403')) {
+        setError("API 密钥无效，请检查后重新输入");
+        setShowKeyInput(true);
+      } else if (e.message?.includes('quota') || e.message?.includes('429')) {
+        setError("API 配额已用完，请稍后再试");
+      } else if (e.message?.includes('timeout') || e.message?.includes('network')) {
+        setError("网络连接失败，请检查网络后重试");
       } else {
-        setError(e.message || "发生了意外错误。");
+        setError(e.message || "生成失败，请重试");
       }
-      console.error(e);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const isButtonDisabled = !styleImage || !sourceImage || isLoading || !hasApiKey;
+  const isButtonDisabled = !styleImage || !sourceImage || isLoading || !apiKey;
 
-  // Show API Key configuration message if not configured
-  if (!hasApiKey) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 flex items-center justify-center text-white p-4 relative overflow-hidden">
-        {/* Animated background */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl animate-pulse"></div>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/10 to-gray-900 text-white p-4 sm:p-6 relative overflow-hidden">
+      {/* 背景装饰 */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500/5 rounded-full blur-3xl animate-pulse"></div>
+      </div>
 
-        <div className="relative backdrop-blur-xl bg-gradient-to-br from-gray-800/80 via-purple-900/40 to-gray-800/80 p-10 rounded-3xl shadow-2xl text-center max-w-2xl border-2 border-purple-500/30 hover:border-pink-500/50 transition-all duration-500">
-          <div className="mb-6">
-            <div className="text-6xl mb-4 animate-bounce">🔑</div>
-            <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 mb-4">
-              输入您的 API 密钥
-            </h2>
-          </div>
-
-          <p className="text-gray-300 mb-6 leading-relaxed">
-            要使用 AI 风格迁移，请输入您的 <span className="text-purple-400 font-bold">Gemini API 密钥</span>。
-          </p>
-
-          {/* API Key Input */}
-          <div className="mb-6">
-            <div className="relative">
+      {/* API Key 输入栏 */}
+      {showKeyInput && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-gray-900 via-purple-900/30 to-transparent backdrop-blur-xl border-b border-purple-500/20 p-4 animate-fadeIn">
+          <div className="container mx-auto max-w-2xl">
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0 text-2xl">🔑</div>
               <input
-                type="password"
-                value={inputApiKey}
-                onChange={(e) => setInputApiKey(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSaveApiKey()}
-                placeholder="AIzaSy... (粘贴您的 API 密钥)"
-                className="w-full px-4 py-3 bg-gray-900/70 border-2 border-purple-500/30 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/70 transition-all duration-300"
+                type="text"
+                placeholder="请输入您的 Gemini API 密钥 (AIzaSy...)"
+                className="flex-1 px-4 py-2 bg-gray-800/80 border border-purple-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-pink-400 transition-all"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSaveKey(e.currentTarget.value);
+                  }
+                }}
               />
+              <button
+                onClick={(e) => {
+                  const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                  handleSaveKey(input.value);
+                }}
+                className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg font-bold hover:from-purple-500 hover:to-pink-500 transition-all"
+              >
+                确认
+              </button>
+              {apiKey && (
+                <button
+                  onClick={() => setShowKeyInput(false)}
+                  className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
+                >
+                  ✕
+                </button>
+              )}
             </div>
-            <button
-              onClick={handleSaveApiKey}
-              disabled={!inputApiKey.trim()}
-              className={`mt-4 w-full relative inline-flex items-center justify-center px-8 py-3 text-lg font-bold rounded-xl transition-all duration-500 transform hover:scale-105 ${
-                inputApiKey.trim()
-                  ? 'bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 text-white hover:from-purple-500 hover:via-pink-500 hover:to-indigo-500 shadow-2xl hover:shadow-pink-500/50'
-                  : 'bg-gray-700 text-gray-500 cursor-not-allowed'
-              }`}
-            >
-              <span className="relative z-10">✨ 开始创作 ✨</span>
-            </button>
-          </div>
-
-          {/* Instructions */}
-          <div className="bg-gray-900/50 border border-purple-500/30 rounded-xl p-6 mb-6 text-left">
-            <h3 className="text-lg font-bold text-purple-400 mb-3">📝 如何获取 API 密钥：</h3>
-            <ol className="space-y-2 text-sm text-gray-300">
-              <li className="flex items-start gap-2">
-                <span className="text-pink-400 font-bold">1.</span>
-                <span>访问 <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-indigo-400 underline hover:text-indigo-300">Google AI Studio</a></span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-pink-400 font-bold">2.</span>
-                <span>创建或复制您的 API 密钥</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-pink-400 font-bold">3.</span>
-                <span>粘贴到上面的输入框并点击"开始创作"</span>
-              </li>
-            </ol>
-            <div className="mt-4 p-3 bg-indigo-500/10 border border-indigo-500/30 rounded-lg">
-              <p className="text-xs text-indigo-300">
-                🔒 您的 API 密钥仅保存在浏览器本地，不会发送到我们的服务器。它仅用于直接与 Google Gemini API 通信。
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl backdrop-blur-sm">
-            <p className="text-xs text-yellow-300">
-              ⚠️ 使用 Gemini API 可能会产生费用。请查看 <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noopener noreferrer" className="underline hover:text-yellow-200 font-semibold">计费说明文档</a>。
+            <p className="mt-2 text-xs text-gray-400 text-center">
+              获取 API 密钥：<a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 underline">Google AI Studio</a>
             </p>
           </div>
         </div>
-      </div>
-    );
-  }
+      )}
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 text-white p-4 sm:p-6 lg:p-8 flex flex-col relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl animate-pulse delay-500"></div>
-      </div>
-
-      <header className="text-center mb-8 relative z-10">
-        <div className="flex justify-end mb-2">
-          {userApiKey && (
-            <button
-              onClick={handleClearApiKey}
-              className="px-4 py-2 text-sm bg-gray-800/50 border border-gray-700 rounded-lg text-gray-300 hover:bg-red-500/20 hover:border-red-500/50 hover:text-red-300 transition-all duration-300"
-            >
-              🔑 更换 API 密钥
-            </button>
-          )}
+      {/* 头部 */}
+      <header className="text-center mb-8 relative z-10 pt-20">
+        <div className="flex justify-end mb-2 max-w-7xl mx-auto">
+          <button
+            onClick={() => setShowKeyInput(!showKeyInput)}
+            className="px-4 py-2 text-sm bg-gray-800/50 border border-gray-700/50 rounded-lg text-gray-300 hover:bg-purple-500/20 hover:border-purple-500/50 transition-all"
+          >
+            {apiKey ? '🔑 更换密钥' : '🔑 设置密钥'}
+          </button>
         </div>
-        <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 mb-2 drop-shadow-2xl animate-gradient">
-          ✨ AI 风格迁移 ✨
+        <h1 className="text-5xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 mb-3">
+          AI 风格迁移
         </h1>
-        <p className="mt-4 text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto font-medium">
-          使用 <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 font-bold">Gemini AI</span> 的强大能力转换您的图片风格
+        <p className="text-lg text-gray-300">
+          使用 <span className="text-purple-400 font-bold">Gemini AI</span> 重绘您的图片
         </p>
-        <div className="mt-2 flex items-center justify-center gap-2 text-sm text-gray-400">
-          <span className="inline-block w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-          <span>由 Google Gemini 2.5 Flash 驱动</span>
-        </div>
       </header>
 
-      <main className="flex-grow container mx-auto max-w-7xl">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-24">
+      {/* 主内容区 */}
+      <main className="container mx-auto max-w-7xl mb-32">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* 风格参考图 */}
           <ImageUploader
             id="style-upload"
             label="风格参考图"
@@ -345,6 +299,8 @@ export default function App() {
             icon={<StyleIcon />}
             disabled={isLoading}
           />
+
+          {/* 源内容图 */}
           <ImageUploader
             id="source-upload"
             label="源内容图"
@@ -354,19 +310,18 @@ export default function App() {
             disabled={isLoading}
           />
 
-          <div className="relative backdrop-blur-xl bg-gradient-to-br from-purple-800/40 via-pink-800/40 to-indigo-800/40 p-6 rounded-3xl shadow-2xl flex flex-col items-center justify-center h-full border-2 border-purple-500/30 hover:border-pink-500/50 transition-all duration-500 group">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-pink-500/5 to-indigo-500/5 rounded-3xl blur-xl group-hover:opacity-75 transition-opacity"></div>
-            <div className="relative z-10 w-full h-full flex flex-col">
-              <div className="flex items-center text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 mb-4">
+          {/* 生成结果 */}
+          <div className="relative backdrop-blur-xl bg-gradient-to-br from-purple-800/30 to-pink-800/30 p-6 rounded-2xl shadow-xl flex flex-col items-center justify-center h-full border border-purple-500/30">
+            <div className="w-full h-full flex flex-col">
+              <div className="flex items-center text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-indigo-400 mb-3">
                 <SparklesIcon />
-                <span className="ml-3">✨ 生成结果</span>
+                <span className="ml-2">生成结果</span>
               </div>
-              <div className="w-full h-64 bg-gradient-to-br from-gray-900/90 to-gray-800/90 rounded-2xl flex items-center justify-center overflow-hidden border border-purple-500/20 shadow-inner relative">
+              <div className="w-full h-64 bg-gray-900/70 rounded-xl flex items-center justify-center overflow-hidden border border-purple-500/20 relative">
                 {isLoading && <LoadingSpinner />}
                 {error && !isLoading && (
-                  <div className="text-center p-6 bg-red-500/10 border border-red-500/30 rounded-xl backdrop-blur-sm">
-                    <p className="text-red-400 font-bold text-lg mb-2">⚠️ 错误</p>
-                    <p className="text-sm text-red-300">{error}</p>
+                  <div className="text-center p-4 bg-red-500/10 border border-red-500/30 rounded-lg max-w-xs">
+                    <p className="text-red-400 font-bold mb-1">⚠️ {error}</p>
                   </div>
                 )}
                 {generatedImage && !isLoading && (
@@ -375,7 +330,7 @@ export default function App() {
                 {!isLoading && !generatedImage && !error && (
                   <div className="text-gray-400 text-center">
                     <div className="text-4xl mb-2">🎨</div>
-                    <div className="text-sm font-medium">您的作品将在这里显示</div>
+                    <div className="text-sm">作品将在这里显示</div>
                   </div>
                 )}
               </div>
@@ -384,41 +339,24 @@ export default function App() {
         </div>
       </main>
 
-      <footer className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-gray-900 via-gray-900/95 to-transparent backdrop-blur-xl border-t border-purple-500/20 z-20">
+      {/* 底部生成按钮 */}
+      <footer className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-gray-900 to-transparent backdrop-blur-md z-40">
         <div className="container mx-auto max-w-7xl flex justify-center">
           <button
             onClick={handleGenerate}
             disabled={isButtonDisabled}
-            className={`
-              relative inline-flex items-center justify-center px-10 py-5 text-xl font-black
-              rounded-full transition-all duration-500 ease-out
-              transform hover:scale-105 active:scale-95
-              ${isButtonDisabled
-                ? 'bg-gray-700 text-gray-500 cursor-not-allowed opacity-50'
-                : 'bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 text-white hover:from-purple-500 hover:via-pink-500 hover:to-indigo-500 shadow-2xl hover:shadow-pink-500/50 animate-shimmer'
-              }
-            `}
+            className={`px-12 py-4 text-xl font-black rounded-full transition-all duration-300 transform hover:scale-105 ${
+              isButtonDisabled
+                ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                : 'bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 text-white hover:shadow-2xl hover:shadow-pink-500/30'
+            }`}
           >
-            {/* Glow effect */}
-            {!isButtonDisabled && (
-              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 blur-xl opacity-60 group-hover:opacity-100 transition-opacity"></div>
-            )}
-
-            <div className="relative z-10 flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <SparklesIcon />
-              <span className="tracking-wide">
-                {isLoading ? '🎨 正在创作魔法...' : '✨ 开始风格转换 ✨'}
-              </span>
+              <span>{isLoading ? '正在创作...' : '开始风格转换'}</span>
             </div>
           </button>
         </div>
-
-        {/* Progress hint */}
-        {!isButtonDisabled && !isLoading && (
-          <p className="text-center mt-3 text-sm text-gray-400 animate-pulse">
-            准备好创作惊艳作品了吗？🚀
-          </p>
-        )}
       </footer>
     </div>
   );

@@ -120,9 +120,39 @@ export default function App() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Check if API key is available from environment variable
-  const apiKey = process.env.API_KEY;
+  // User input API key state
+  const [userApiKey, setUserApiKey] = useState<string>('');
+  const [inputApiKey, setInputApiKey] = useState<string>('');
+  const [showApiKeyInput, setShowApiKeyInput] = useState<boolean>(false);
+
+  // Load API key from localStorage on mount
+  useEffect(() => {
+    const savedKey = localStorage.getItem('gemini_api_key');
+    if (savedKey) {
+      setUserApiKey(savedKey);
+    }
+  }, []);
+
+  // Check if API key is available (from user input or environment variable)
+  const apiKey = userApiKey || process.env.API_KEY;
   const hasApiKey = !!apiKey;
+
+  const handleSaveApiKey = () => {
+    if (inputApiKey.trim()) {
+      setUserApiKey(inputApiKey.trim());
+      localStorage.setItem('gemini_api_key', inputApiKey.trim());
+      setShowApiKeyInput(false);
+      setInputApiKey('');
+      setError(null);
+    }
+  };
+
+  const handleClearApiKey = () => {
+    setUserApiKey('');
+    setInputApiKey('');
+    localStorage.removeItem('gemini_api_key');
+    setShowApiKeyInput(true);
+  };
 
   const processFile = useCallback((
     file: File,
@@ -206,34 +236,61 @@ export default function App() {
           <div className="mb-6">
             <div className="text-6xl mb-4 animate-bounce">🔑</div>
             <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 mb-4">
-              API Key Required
+              Enter Your API Key
             </h2>
           </div>
 
           <p className="text-gray-300 mb-6 leading-relaxed">
-            To use AI Style Transfer, you need to configure your <span className="text-purple-400 font-bold">Gemini API key</span>.
+            To use AI Style Transfer, please enter your <span className="text-purple-400 font-bold">Gemini API Key</span>.
           </p>
 
+          {/* API Key Input */}
+          <div className="mb-6">
+            <div className="relative">
+              <input
+                type="password"
+                value={inputApiKey}
+                onChange={(e) => setInputApiKey(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSaveApiKey()}
+                placeholder="AIzaSy... (paste your API key here)"
+                className="w-full px-4 py-3 bg-gray-900/70 border-2 border-purple-500/30 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/70 transition-all duration-300"
+              />
+            </div>
+            <button
+              onClick={handleSaveApiKey}
+              disabled={!inputApiKey.trim()}
+              className={`mt-4 w-full relative inline-flex items-center justify-center px-8 py-3 text-lg font-bold rounded-xl transition-all duration-500 transform hover:scale-105 ${
+                inputApiKey.trim()
+                  ? 'bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 text-white hover:from-purple-500 hover:via-pink-500 hover:to-indigo-500 shadow-2xl hover:shadow-pink-500/50'
+                  : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+              }`}
+            >
+              <span className="relative z-10">✨ Start Creating ✨</span>
+            </button>
+          </div>
+
+          {/* Instructions */}
           <div className="bg-gray-900/50 border border-purple-500/30 rounded-xl p-6 mb-6 text-left">
-            <h3 className="text-lg font-bold text-purple-400 mb-3">📝 Setup Instructions:</h3>
-            <ol className="space-y-3 text-sm text-gray-300">
+            <h3 className="text-lg font-bold text-purple-400 mb-3">📝 How to get your API Key:</h3>
+            <ol className="space-y-2 text-sm text-gray-300">
               <li className="flex items-start gap-2">
                 <span className="text-pink-400 font-bold">1.</span>
-                <span>Get your API key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-indigo-400 underline hover:text-indigo-300">Google AI Studio</a></span>
+                <span>Visit <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-indigo-400 underline hover:text-indigo-300">Google AI Studio</a></span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-pink-400 font-bold">2.</span>
-                <span>Create a <code className="bg-gray-800 px-2 py-1 rounded text-purple-300">.env.local</code> file in the project root</span>
+                <span>Create or copy your API key</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-pink-400 font-bold">3.</span>
-                <span>Add this line: <code className="bg-gray-800 px-2 py-1 rounded text-purple-300">GEMINI_API_KEY=your_api_key_here</code></span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-pink-400 font-bold">4.</span>
-                <span>Restart the development server</span>
+                <span>Paste it above and click "Start Creating"</span>
               </li>
             </ol>
+            <div className="mt-4 p-3 bg-indigo-500/10 border border-indigo-500/30 rounded-lg">
+              <p className="text-xs text-indigo-300">
+                🔒 Your API key is stored locally in your browser and never sent to our servers. It's only used to communicate directly with Google's Gemini API.
+              </p>
+            </div>
           </div>
 
           <div className="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl backdrop-blur-sm">
@@ -256,6 +313,16 @@ export default function App() {
       </div>
 
       <header className="text-center mb-8 relative z-10">
+        <div className="flex justify-end mb-2">
+          {userApiKey && (
+            <button
+              onClick={handleClearApiKey}
+              className="px-4 py-2 text-sm bg-gray-800/50 border border-gray-700 rounded-lg text-gray-300 hover:bg-red-500/20 hover:border-red-500/50 hover:text-red-300 transition-all duration-300"
+            >
+              🔑 Change API Key
+            </button>
+          )}
+        </div>
         <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 mb-2 drop-shadow-2xl animate-gradient">
           ✨ AI Style Transfer ✨
         </h1>

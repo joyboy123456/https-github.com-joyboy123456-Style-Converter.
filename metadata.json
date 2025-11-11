@@ -1,0 +1,5 @@
+{
+  "name": "AI Style Transfer",
+  "description": "Upload a style reference image and a source image to generate a new image that combines the content of the source with the style of the reference, powered by Gemini.",
+  "requestFramePermissions": []
+}

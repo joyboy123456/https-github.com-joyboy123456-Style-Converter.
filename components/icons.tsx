@@ -54,14 +54,14 @@ export const LoadingSpinner = () => (
         {/* Text */}
         <div className="mt-6 text-center relative z-10">
             <span className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 animate-pulse">
-                🎨 Creating Magic...
+                🎨 正在创作魔法...
             </span>
             <div className="mt-2 flex items-center justify-center gap-1">
                 <span className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"></span>
                 <span className="w-2 h-2 bg-pink-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></span>
                 <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></span>
             </div>
-            <span className="mt-3 block text-sm text-gray-400">This may take a moment</span>
+            <span className="mt-3 block text-sm text-gray-400">这可能需要一点时间</span>
         </div>
     </div>
 );

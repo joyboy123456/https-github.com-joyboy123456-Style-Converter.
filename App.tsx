@@ -88,15 +88,15 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ id, label, onFileSelect, 
               <div className="group-hover:scale-110 transition-transform duration-300">
                 <UploadIcon />
               </div>
-              <span className="mt-2 font-semibold">Click or Drag & Drop</span>
-              <span className="text-xs text-gray-500 mt-1">PNG, JPG, WEBP</span>
+              <span className="mt-2 font-semibold">点击或拖拽上传</span>
+              <span className="text-xs text-gray-500 mt-1">支持 PNG、JPG、WEBP 格式</span>
             </div>
           )}
         </div>
       </label>
       {isDragging && (
         <div className="absolute inset-0 bg-gradient-to-br from-pink-500/30 via-purple-500/30 to-indigo-500/30 backdrop-blur-md rounded-3xl flex items-center justify-center pointer-events-none z-10 animate-pulse border-2 border-pink-400">
-          <p className="text-2xl font-bold text-white drop-shadow-lg">✨ Drop Image Here ✨</p>
+          <p className="text-2xl font-bold text-white drop-shadow-lg">✨ 放开以上传图片 ✨</p>
         </div>
       )}
       <input
@@ -172,12 +172,12 @@ export default function App() {
 
   const handleGenerate = async () => {
     if (!styleImage || !sourceImage) {
-      setError("Please upload both a style and a source image.");
+      setError("请同时上传风格参考图和源内容图。");
       return;
     }
 
     if (!apiKey) {
-      setError("API Key is not configured. Please add GEMINI_API_KEY to your .env.local file.");
+      setError("API 密钥未配置。请输入您的 Gemini API 密钥。");
       return;
     }
 
@@ -187,7 +187,7 @@ export default function App() {
 
     try {
       const ai = new GoogleGenAI({ apiKey: apiKey });
-      
+
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash-image',
         contents: {
@@ -195,7 +195,7 @@ export default function App() {
             // New structure: Content Image -> Style Image -> Instruction
             { inlineData: { data: sourceImage.base64, mimeType: sourceImage.mimeType } },
             { inlineData: { data: styleImage.base64, mimeType: styleImage.mimeType } },
-            { text: "Based on the second image, redraw the first image in that artistic style. Maintain the subject and composition of the first image." },
+            { text: "基于第二张图片的艺术风格，重新绘制第一张图片。保持第一张图片的主题和构图。" },
           ],
         },
         config: {
@@ -208,13 +208,13 @@ export default function App() {
         const generatedImageDataUrl = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
         setGeneratedImage(generatedImageDataUrl);
       } else {
-        throw new Error("No image was generated. The model may not have been able to process the request.");
+        throw new Error("未能生成图片。模型可能无法处理此请求。");
       }
     } catch (e: any) {
       if (e.message?.includes('Requested entity was not found.') || e.message?.includes('API key')) {
-        setError("API Key error. Please check your GEMINI_API_KEY in .env.local file.");
+        setError("API 密钥错误。请检查您的 Gemini API 密钥。");
       } else {
-        setError(e.message || "An unexpected error occurred.");
+        setError(e.message || "发生了意外错误。");
       }
       console.error(e);
     } finally {
@@ -236,12 +236,12 @@ export default function App() {
           <div className="mb-6">
             <div className="text-6xl mb-4 animate-bounce">🔑</div>
             <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 mb-4">
-              Enter Your API Key
+              输入您的 API 密钥
             </h2>
           </div>
 
           <p className="text-gray-300 mb-6 leading-relaxed">
-            To use AI Style Transfer, please enter your <span className="text-purple-400 font-bold">Gemini API Key</span>.
+            要使用 AI 风格迁移，请输入您的 <span className="text-purple-400 font-bold">Gemini API 密钥</span>。
           </p>
 
           {/* API Key Input */}
@@ -252,7 +252,7 @@ export default function App() {
                 value={inputApiKey}
                 onChange={(e) => setInputApiKey(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSaveApiKey()}
-                placeholder="AIzaSy... (paste your API key here)"
+                placeholder="AIzaSy... (粘贴您的 API 密钥)"
                 className="w-full px-4 py-3 bg-gray-900/70 border-2 border-purple-500/30 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/70 transition-all duration-300"
               />
             </div>
@@ -265,37 +265,37 @@ export default function App() {
                   : 'bg-gray-700 text-gray-500 cursor-not-allowed'
               }`}
             >
-              <span className="relative z-10">✨ Start Creating ✨</span>
+              <span className="relative z-10">✨ 开始创作 ✨</span>
             </button>
           </div>
 
           {/* Instructions */}
           <div className="bg-gray-900/50 border border-purple-500/30 rounded-xl p-6 mb-6 text-left">
-            <h3 className="text-lg font-bold text-purple-400 mb-3">📝 How to get your API Key:</h3>
+            <h3 className="text-lg font-bold text-purple-400 mb-3">📝 如何获取 API 密钥：</h3>
             <ol className="space-y-2 text-sm text-gray-300">
               <li className="flex items-start gap-2">
                 <span className="text-pink-400 font-bold">1.</span>
-                <span>Visit <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-indigo-400 underline hover:text-indigo-300">Google AI Studio</a></span>
+                <span>访问 <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-indigo-400 underline hover:text-indigo-300">Google AI Studio</a></span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-pink-400 font-bold">2.</span>
-                <span>Create or copy your API key</span>
+                <span>创建或复制您的 API 密钥</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-pink-400 font-bold">3.</span>
-                <span>Paste it above and click "Start Creating"</span>
+                <span>粘贴到上面的输入框并点击"开始创作"</span>
               </li>
             </ol>
             <div className="mt-4 p-3 bg-indigo-500/10 border border-indigo-500/30 rounded-lg">
               <p className="text-xs text-indigo-300">
-                🔒 Your API key is stored locally in your browser and never sent to our servers. It's only used to communicate directly with Google's Gemini API.
+                🔒 您的 API 密钥仅保存在浏览器本地，不会发送到我们的服务器。它仅用于直接与 Google Gemini API 通信。
               </p>
             </div>
           </div>
 
           <div className="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl backdrop-blur-sm">
             <p className="text-xs text-yellow-300">
-              ⚠️ Using the Gemini API may incur costs. Please review the <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noopener noreferrer" className="underline hover:text-yellow-200 font-semibold">billing documentation</a>.
+              ⚠️ 使用 Gemini API 可能会产生费用。请查看 <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noopener noreferrer" className="underline hover:text-yellow-200 font-semibold">计费说明文档</a>。
             </p>
           </div>
         </div>
@@ -319,19 +319,19 @@ export default function App() {
               onClick={handleClearApiKey}
               className="px-4 py-2 text-sm bg-gray-800/50 border border-gray-700 rounded-lg text-gray-300 hover:bg-red-500/20 hover:border-red-500/50 hover:text-red-300 transition-all duration-300"
             >
-              🔑 Change API Key
+              🔑 更换 API 密钥
             </button>
           )}
         </div>
         <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 mb-2 drop-shadow-2xl animate-gradient">
-          ✨ AI Style Transfer ✨
+          ✨ AI 风格迁移 ✨
         </h1>
         <p className="mt-4 text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto font-medium">
-          Transform your images with the power of <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 font-bold">Gemini AI</span>
+          使用 <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 font-bold">Gemini AI</span> 的强大能力转换您的图片风格
         </p>
         <div className="mt-2 flex items-center justify-center gap-2 text-sm text-gray-400">
           <span className="inline-block w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-          <span>Powered by Google Gemini 2.5 Flash</span>
+          <span>由 Google Gemini 2.5 Flash 驱动</span>
         </div>
       </header>
 
@@ -339,7 +339,7 @@ export default function App() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-24">
           <ImageUploader
             id="style-upload"
-            label="Style Reference Image"
+            label="风格参考图"
             onFileSelect={(file) => processFile(file, setStyleImage)}
             previewUrl={styleImage?.preview || null}
             icon={<StyleIcon />}
@@ -347,7 +347,7 @@ export default function App() {
           />
           <ImageUploader
             id="source-upload"
-            label="Source Content Image"
+            label="源内容图"
             onFileSelect={(file) => processFile(file, setSourceImage)}
             previewUrl={sourceImage?.preview || null}
             icon={<ContentIcon />}
@@ -359,23 +359,23 @@ export default function App() {
             <div className="relative z-10 w-full h-full flex flex-col">
               <div className="flex items-center text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 mb-4">
                 <SparklesIcon />
-                <span className="ml-3">✨ Generated Result</span>
+                <span className="ml-3">✨ 生成结果</span>
               </div>
               <div className="w-full h-64 bg-gradient-to-br from-gray-900/90 to-gray-800/90 rounded-2xl flex items-center justify-center overflow-hidden border border-purple-500/20 shadow-inner relative">
                 {isLoading && <LoadingSpinner />}
                 {error && !isLoading && (
                   <div className="text-center p-6 bg-red-500/10 border border-red-500/30 rounded-xl backdrop-blur-sm">
-                    <p className="text-red-400 font-bold text-lg mb-2">⚠️ Error</p>
+                    <p className="text-red-400 font-bold text-lg mb-2">⚠️ 错误</p>
                     <p className="text-sm text-red-300">{error}</p>
                   </div>
                 )}
                 {generatedImage && !isLoading && (
-                  <img src={generatedImage} alt="Generated result" className="w-full h-full object-contain animate-fadeIn" />
+                  <img src={generatedImage} alt="生成结果" className="w-full h-full object-contain animate-fadeIn" />
                 )}
                 {!isLoading && !generatedImage && !error && (
                   <div className="text-gray-400 text-center">
                     <div className="text-4xl mb-2">🎨</div>
-                    <div className="text-sm font-medium">Your masterpiece will appear here</div>
+                    <div className="text-sm font-medium">您的作品将在这里显示</div>
                   </div>
                 )}
               </div>
@@ -407,7 +407,7 @@ export default function App() {
             <div className="relative z-10 flex items-center gap-3">
               <SparklesIcon />
               <span className="tracking-wide">
-                {isLoading ? '🎨 Creating Magic...' : '✨ Transform Style ✨'}
+                {isLoading ? '🎨 正在创作魔法...' : '✨ 开始风格转换 ✨'}
               </span>
             </div>
           </button>
@@ -416,7 +416,7 @@ export default function App() {
         {/* Progress hint */}
         {!isButtonDisabled && !isLoading && (
           <p className="text-center mt-3 text-sm text-gray-400 animate-pulse">
-            Ready to create something amazing? 🚀
+            准备好创作惊艳作品了吗？🚀
           </p>
         )}
       </footer>

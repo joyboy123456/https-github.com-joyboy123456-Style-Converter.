@@ -119,31 +119,10 @@ export default function App() {
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [apiKeySelected, setApiKeySelected] = useState<boolean | null>(null);
 
-  useEffect(() => {
-    const checkApiKey = async () => {
-      try {
-        const hasKey = await window.aistudio.hasSelectedApiKey();
-        setApiKeySelected(hasKey);
-      } catch (e) {
-        console.error("Error checking for API key:", e);
-        setApiKeySelected(false);
-      }
-    };
-    checkApiKey();
-  }, []);
-
-  const handleSelectKey = async () => {
-    try {
-      await window.aistudio.openSelectKey();
-      // Assume success after the dialog opens, to handle race conditions
-      setApiKeySelected(true);
-    } catch (e) {
-      console.error("Error opening API key selection:", e);
-      setError("Could not open the API key selection dialog.");
-    }
-  };
+  // Check if API key is available from environment variable
+  const apiKey = process.env.API_KEY;
+  const hasApiKey = !!apiKey;
 
   const processFile = useCallback((
     file: File,
@@ -167,12 +146,17 @@ export default function App() {
       return;
     }
 
+    if (!apiKey) {
+      setError("API Key is not configured. Please add GEMINI_API_KEY to your .env.local file.");
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setGeneratedImage(null);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+      const ai = new GoogleGenAI({ apiKey: apiKey });
       
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash-image',
@@ -197,9 +181,8 @@ export default function App() {
         throw new Error("No image was generated. The model may not have been able to process the request.");
       }
     } catch (e: any) {
-      if (e.message?.includes('Requested entity was not found.')) {
-        setError("API Key error. Please select a valid API key and try again.");
-        setApiKeySelected(false);
+      if (e.message?.includes('Requested entity was not found.') || e.message?.includes('API key')) {
+        setError("API Key error. Please check your GEMINI_API_KEY in .env.local file.");
       } else {
         setError(e.message || "An unexpected error occurred.");
       }
@@ -209,26 +192,17 @@ export default function App() {
     }
   };
 
-  const isButtonDisabled = !styleImage || !sourceImage || isLoading;
+  const isButtonDisabled = !styleImage || !sourceImage || isLoading || !hasApiKey;
 
-  if (apiKeySelected === null) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 flex items-center justify-center relative overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <LoadingSpinner />
-      </div>
-    );
-  }
-
-  if (!apiKeySelected) {
+  // Show API Key configuration message if not configured
+  if (!hasApiKey) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 flex items-center justify-center text-white p-4 relative overflow-hidden">
         {/* Animated background */}
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl animate-pulse"></div>
 
-        <div className="relative backdrop-blur-xl bg-gradient-to-br from-gray-800/80 via-purple-900/40 to-gray-800/80 p-10 rounded-3xl shadow-2xl text-center max-w-lg border-2 border-purple-500/30 hover:border-pink-500/50 transition-all duration-500">
+        <div className="relative backdrop-blur-xl bg-gradient-to-br from-gray-800/80 via-purple-900/40 to-gray-800/80 p-10 rounded-3xl shadow-2xl text-center max-w-2xl border-2 border-purple-500/30 hover:border-pink-500/50 transition-all duration-500">
           <div className="mb-6">
             <div className="text-6xl mb-4 animate-bounce">🔑</div>
             <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 mb-4">
@@ -236,29 +210,37 @@ export default function App() {
             </h2>
           </div>
 
-          <p className="text-gray-300 mb-8 leading-relaxed">
-            To unlock the power of AI Style Transfer, you need to select a <span className="text-purple-400 font-bold">Gemini API key</span>. Your key is stored securely and only used for your requests during this session.
+          <p className="text-gray-300 mb-6 leading-relaxed">
+            To use AI Style Transfer, you need to configure your <span className="text-purple-400 font-bold">Gemini API key</span>.
           </p>
 
-          <button
-            onClick={handleSelectKey}
-            className="relative inline-flex items-center justify-center px-8 py-4 text-lg font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 text-white rounded-full hover:from-purple-500 hover:via-pink-500 hover:to-indigo-500 transition-all duration-500 transform hover:scale-105 shadow-2xl hover:shadow-pink-500/50 group"
-          >
-            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 blur-lg opacity-60 group-hover:opacity-100 transition-opacity"></div>
-            <span className="relative z-10">✨ Select API Key ✨</span>
-          </button>
+          <div className="bg-gray-900/50 border border-purple-500/30 rounded-xl p-6 mb-6 text-left">
+            <h3 className="text-lg font-bold text-purple-400 mb-3">📝 Setup Instructions:</h3>
+            <ol className="space-y-3 text-sm text-gray-300">
+              <li className="flex items-start gap-2">
+                <span className="text-pink-400 font-bold">1.</span>
+                <span>Get your API key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-indigo-400 underline hover:text-indigo-300">Google AI Studio</a></span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-pink-400 font-bold">2.</span>
+                <span>Create a <code className="bg-gray-800 px-2 py-1 rounded text-purple-300">.env.local</code> file in the project root</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-pink-400 font-bold">3.</span>
+                <span>Add this line: <code className="bg-gray-800 px-2 py-1 rounded text-purple-300">GEMINI_API_KEY=your_api_key_here</code></span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-pink-400 font-bold">4.</span>
+                <span>Restart the development server</span>
+              </li>
+            </ol>
+          </div>
 
           <div className="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl backdrop-blur-sm">
             <p className="text-xs text-yellow-300">
               ⚠️ Using the Gemini API may incur costs. Please review the <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noopener noreferrer" className="underline hover:text-yellow-200 font-semibold">billing documentation</a>.
             </p>
           </div>
-
-          {error && (
-            <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl backdrop-blur-sm">
-              <p className="text-sm text-red-300">⚠️ {error}</p>
-            </div>
-          )}
         </div>
       </div>
     );

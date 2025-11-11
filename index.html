@@ -8,19 +8,73 @@
     <title>AI Style Transfer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      /* For a custom scrollbar to match the dark theme */
+      /* Custom scrollbar to match the dark theme */
       ::-webkit-scrollbar {
-        width: 8px;
+        width: 10px;
       }
       ::-webkit-scrollbar-track {
-        background: #1f2937; /* bg-gray-800 */
+        background: linear-gradient(to bottom, #1f2937, #111827);
       }
       ::-webkit-scrollbar-thumb {
-        background: #4b5563; /* bg-gray-600 */
-        border-radius: 4px;
+        background: linear-gradient(to bottom, #a855f7, #ec4899);
+        border-radius: 10px;
       }
       ::-webkit-scrollbar-thumb:hover {
-        background: #6b7280; /* bg-gray-500 */
+        background: linear-gradient(to bottom, #9333ea, #db2777);
+      }
+
+      /* Custom animations */
+      @keyframes shimmer {
+        0% {
+          background-position: -200% 0;
+        }
+        100% {
+          background-position: 200% 0;
+        }
+      }
+
+      @keyframes gradient {
+        0%, 100% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      .animate-shimmer {
+        background-size: 200% 100%;
+        animation: shimmer 3s linear infinite;
+      }
+
+      .animate-gradient {
+        background-size: 200% 200%;
+        animation: gradient 3s ease infinite;
+      }
+
+      .animate-fadeIn {
+        animation: fadeIn 0.5s ease-out;
+      }
+
+      /* Smooth transitions */
+      * {
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      /* Custom gradient background */
+      body {
+        background-attachment: fixed;
       }
     </style>
   <script type="importmap">

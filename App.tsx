@@ -67,7 +67,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ id, label, onFileSelect, 
   };
 
   return (
-    <div className={`relative bg-gray-800 p-6 rounded-2xl shadow-lg flex flex-col items-center justify-center h-full border-2 border-dashed ${isDragging ? 'border-solid border-indigo-500 scale-105' : 'border-gray-600'} hover:border-indigo-500 transition-all duration-300`}>
+    <div className={`relative backdrop-blur-xl bg-gradient-to-br from-gray-800/80 via-gray-900/80 to-gray-800/80 p-6 rounded-3xl shadow-2xl flex flex-col items-center justify-center h-full border-2 ${isDragging ? 'border-pink-500 scale-105 shadow-pink-500/50' : 'border-gray-700/50'} hover:border-purple-500/70 hover:shadow-purple-500/30 transition-all duration-500 group`}>
       <label
         htmlFor={id}
         className={`w-full h-full flex flex-col items-center justify-center text-center ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
@@ -76,16 +76,18 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ id, label, onFileSelect, 
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >
-        <div className="flex items-center text-xl font-semibold text-indigo-400 mb-4">
+        <div className="flex items-center text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 mb-4 group-hover:scale-110 transition-transform duration-300">
           {icon}
           <span className="ml-3">{label}</span>
         </div>
-        <div className="w-full h-64 bg-gray-900/50 rounded-lg flex items-center justify-center overflow-hidden">
+        <div className="w-full h-64 bg-gradient-to-br from-gray-900/90 to-gray-800/90 rounded-2xl flex items-center justify-center overflow-hidden border border-gray-700/30 group-hover:border-purple-500/50 transition-all duration-300 shadow-inner">
           {previewUrl ? (
-            <img src={previewUrl} alt={label} className="w-full h-full object-contain" />
+            <img src={previewUrl} alt={label} className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105" />
           ) : (
-            <div className="text-gray-400 flex flex-col items-center">
-              <UploadIcon />
+            <div className="text-gray-400 flex flex-col items-center group-hover:text-purple-300 transition-colors duration-300">
+              <div className="group-hover:scale-110 transition-transform duration-300">
+                <UploadIcon />
+              </div>
               <span className="mt-2 font-semibold">Click or Drag & Drop</span>
               <span className="text-xs text-gray-500 mt-1">PNG, JPG, WEBP</span>
             </div>
@@ -93,8 +95,8 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ id, label, onFileSelect, 
         </div>
       </label>
       {isDragging && (
-        <div className="absolute inset-0 bg-gray-900/70 backdrop-blur-sm rounded-xl flex items-center justify-center pointer-events-none z-10">
-          <p className="text-xl font-semibold text-indigo-300">Drop Image Here</p>
+        <div className="absolute inset-0 bg-gradient-to-br from-pink-500/30 via-purple-500/30 to-indigo-500/30 backdrop-blur-md rounded-3xl flex items-center justify-center pointer-events-none z-10 animate-pulse border-2 border-pink-400">
+          <p className="text-2xl font-bold text-white drop-shadow-lg">✨ Drop Image Here ✨</p>
         </div>
       )}
       <input
@@ -211,7 +213,9 @@ export default function App() {
 
   if (apiKeySelected === null) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 flex items-center justify-center relative overflow-hidden">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl animate-pulse"></div>
         <LoadingSpinner />
       </div>
     );
@@ -219,38 +223,67 @@ export default function App() {
 
   if (!apiKeySelected) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white p-4">
-        <div className="bg-gray-800 p-8 rounded-2xl shadow-lg text-center max-w-md border border-gray-700">
-          <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500 mb-4">
-            API Key Required
-          </h2>
-          <p className="text-gray-400 mb-6">
-            To use this application, you need to select a Gemini API key. Your key is stored securely and only used for your requests during this session.
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 flex items-center justify-center text-white p-4 relative overflow-hidden">
+        {/* Animated background */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl animate-pulse"></div>
+
+        <div className="relative backdrop-blur-xl bg-gradient-to-br from-gray-800/80 via-purple-900/40 to-gray-800/80 p-10 rounded-3xl shadow-2xl text-center max-w-lg border-2 border-purple-500/30 hover:border-pink-500/50 transition-all duration-500">
+          <div className="mb-6">
+            <div className="text-6xl mb-4 animate-bounce">🔑</div>
+            <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 mb-4">
+              API Key Required
+            </h2>
+          </div>
+
+          <p className="text-gray-300 mb-8 leading-relaxed">
+            To unlock the power of AI Style Transfer, you need to select a <span className="text-purple-400 font-bold">Gemini API key</span>. Your key is stored securely and only used for your requests during this session.
           </p>
+
           <button
             onClick={handleSelectKey}
-            className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold py-3 px-6 rounded-full hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 transform hover:-translate-y-1 shadow-lg"
+            className="relative inline-flex items-center justify-center px-8 py-4 text-lg font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 text-white rounded-full hover:from-purple-500 hover:via-pink-500 hover:to-indigo-500 transition-all duration-500 transform hover:scale-105 shadow-2xl hover:shadow-pink-500/50 group"
           >
-            Select API Key
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 blur-lg opacity-60 group-hover:opacity-100 transition-opacity"></div>
+            <span className="relative z-10">✨ Select API Key ✨</span>
           </button>
-          <p className="text-xs text-gray-500 mt-4">
-            Using the Gemini API may incur costs. Please review the <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noopener noreferrer" className="underline hover:text-indigo-400">billing documentation</a>.
-          </p>
-          {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
+
+          <div className="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl backdrop-blur-sm">
+            <p className="text-xs text-yellow-300">
+              ⚠️ Using the Gemini API may incur costs. Please review the <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noopener noreferrer" className="underline hover:text-yellow-200 font-semibold">billing documentation</a>.
+            </p>
+          </div>
+
+          {error && (
+            <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl backdrop-blur-sm">
+              <p className="text-sm text-red-300">⚠️ {error}</p>
+            </div>
+          )}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-4 sm:p-6 lg:p-8 flex flex-col">
-      <header className="text-center mb-8">
-        <h1 className="text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">
-          AI Style Transfer
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 text-white p-4 sm:p-6 lg:p-8 flex flex-col relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl animate-pulse delay-500"></div>
+      </div>
+
+      <header className="text-center mb-8 relative z-10">
+        <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 mb-2 drop-shadow-2xl animate-gradient">
+          ✨ AI Style Transfer ✨
         </h1>
-        <p className="mt-2 text-lg text-gray-400 max-w-2xl mx-auto">
-          Blend the style of one image with the content of another using Gemini.
+        <p className="mt-4 text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto font-medium">
+          Transform your images with the power of <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 font-bold">Gemini AI</span>
         </p>
+        <div className="mt-2 flex items-center justify-center gap-2 text-sm text-gray-400">
+          <span className="inline-block w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+          <span>Powered by Google Gemini 2.5 Flash</span>
+        </div>
       </header>
 
       <main className="flex-grow container mx-auto max-w-7xl">
@@ -272,49 +305,71 @@ export default function App() {
             disabled={isLoading}
           />
 
-          <div className="bg-gray-800 p-6 rounded-2xl shadow-lg flex flex-col items-center justify-center h-full border-2 border-dashed border-gray-600">
-            <div className="flex items-center text-xl font-semibold text-purple-400 mb-4">
-              <SparklesIcon />
-              <span className="ml-3">Generated Image</span>
-            </div>
-            <div className="w-full h-64 bg-gray-900/50 rounded-lg flex items-center justify-center overflow-hidden">
-              {isLoading && <LoadingSpinner />}
-              {error && !isLoading && (
-                <div className="text-center text-red-400 p-4">
-                  <p><strong>Error</strong></p>
-                  <p className="text-sm">{error}</p>
-                </div>
-              )}
-              {generatedImage && !isLoading && (
-                <img src={generatedImage} alt="Generated result" className="w-full h-full object-contain" />
-              )}
-              {!isLoading && !generatedImage && !error && (
-                <div className="text-gray-500">Result will appear here</div>
-              )}
+          <div className="relative backdrop-blur-xl bg-gradient-to-br from-purple-800/40 via-pink-800/40 to-indigo-800/40 p-6 rounded-3xl shadow-2xl flex flex-col items-center justify-center h-full border-2 border-purple-500/30 hover:border-pink-500/50 transition-all duration-500 group">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-pink-500/5 to-indigo-500/5 rounded-3xl blur-xl group-hover:opacity-75 transition-opacity"></div>
+            <div className="relative z-10 w-full h-full flex flex-col">
+              <div className="flex items-center text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 mb-4">
+                <SparklesIcon />
+                <span className="ml-3">✨ Generated Result</span>
+              </div>
+              <div className="w-full h-64 bg-gradient-to-br from-gray-900/90 to-gray-800/90 rounded-2xl flex items-center justify-center overflow-hidden border border-purple-500/20 shadow-inner relative">
+                {isLoading && <LoadingSpinner />}
+                {error && !isLoading && (
+                  <div className="text-center p-6 bg-red-500/10 border border-red-500/30 rounded-xl backdrop-blur-sm">
+                    <p className="text-red-400 font-bold text-lg mb-2">⚠️ Error</p>
+                    <p className="text-sm text-red-300">{error}</p>
+                  </div>
+                )}
+                {generatedImage && !isLoading && (
+                  <img src={generatedImage} alt="Generated result" className="w-full h-full object-contain animate-fadeIn" />
+                )}
+                {!isLoading && !generatedImage && !error && (
+                  <div className="text-gray-400 text-center">
+                    <div className="text-4xl mb-2">🎨</div>
+                    <div className="text-sm font-medium">Your masterpiece will appear here</div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </main>
 
-      <footer className="fixed bottom-0 left-0 right-0 p-4 bg-gray-900/80 backdrop-blur-sm border-t border-gray-700">
+      <footer className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-gray-900 via-gray-900/95 to-transparent backdrop-blur-xl border-t border-purple-500/20 z-20">
         <div className="container mx-auto max-w-7xl flex justify-center">
           <button
             onClick={handleGenerate}
             disabled={isButtonDisabled}
             className={`
-              inline-flex items-center justify-center px-8 py-4 text-lg font-bold
-              rounded-full transition-all duration-300 ease-in-out
-              shadow-lg hover:shadow-xl transform hover:-translate-y-1
+              relative inline-flex items-center justify-center px-10 py-5 text-xl font-black
+              rounded-full transition-all duration-500 ease-out
+              transform hover:scale-105 active:scale-95
               ${isButtonDisabled
-                ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                : 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700'
+                ? 'bg-gray-700 text-gray-500 cursor-not-allowed opacity-50'
+                : 'bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 text-white hover:from-purple-500 hover:via-pink-500 hover:to-indigo-500 shadow-2xl hover:shadow-pink-500/50 animate-shimmer'
               }
             `}
           >
-            <SparklesIcon />
-            <span className="ml-3">{isLoading ? 'Generating...' : 'Transfer Style'}</span>
+            {/* Glow effect */}
+            {!isButtonDisabled && (
+              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 blur-xl opacity-60 group-hover:opacity-100 transition-opacity"></div>
+            )}
+
+            <div className="relative z-10 flex items-center gap-3">
+              <SparklesIcon />
+              <span className="tracking-wide">
+                {isLoading ? '🎨 Creating Magic...' : '✨ Transform Style ✨'}
+              </span>
+            </div>
           </button>
         </div>
+
+        {/* Progress hint */}
+        {!isButtonDisabled && !isLoading && (
+          <p className="text-center mt-3 text-sm text-gray-400 animate-pulse">
+            Ready to create something amazing? 🚀
+          </p>
+        )}
       </footer>
     </div>
   );
